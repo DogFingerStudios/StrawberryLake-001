@@ -9,6 +9,8 @@ public class FirstPersonController : MonoBehaviour
     private CharacterController characterController;
     private Transform cameraTransform;
     private float verticalRotation = 0f; // Tracks vertical camera rotation
+    private Vector3 movement; // Tracks movement for FixedUpdate
+    private Vector3 gravityForce = Vector3.zero; // Tracks gravity force for FixedUpdate
 
     void Start()
     {
@@ -25,6 +27,7 @@ public class FirstPersonController : MonoBehaviour
         // Mouse look
         float mouseX = Input.GetAxis("Mouse X") * sensitivity;
         float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
+        
 
         // Rotate the player (horizontal rotation)
         transform.Rotate(Vector3.up * mouseX);
@@ -32,7 +35,6 @@ public class FirstPersonController : MonoBehaviour
         // Rotate the camera (vertical rotation)
         verticalRotation -= mouseY;
         verticalRotation = Mathf.Clamp(verticalRotation, -90f, 90f); // Limit up/down rotation
-
         cameraTransform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
 
         // Handle Q and E for rotation
@@ -46,25 +48,30 @@ public class FirstPersonController : MonoBehaviour
             transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
         }
 
-        if (Input.GetKey(KeyCode.R))
-        {
-            transform.Rotate(Vector3.right, -rotationSpeed * Time.deltaTime);
-        }
-
-        if (Input.GetKey(KeyCode.F))
-        {
-            transform.Rotate(Vector3.right, rotationSpeed * Time.deltaTime);
-        }
-
-        // Movement
+        // Capture movement input
         float moveX = Input.GetAxis("Horizontal");
         float moveZ = Input.GetAxis("Vertical");
+        movement = transform.right * moveX + transform.forward * moveZ;
 
-        Vector3 move = transform.right * moveX + transform.forward * moveZ;
-        characterController.Move(move * speed * Time.deltaTime);
-
-        // Gravity
-        Vector3 gravity = Vector3.down * 9.81f * Time.deltaTime;
-        characterController.Move(gravity);
+        // Gravity calculation
+        gravityForce += Vector3.down * 9.81f * Time.deltaTime;
     }
+
+    void FixedUpdate()
+    {
+        // Gravity and ground detection
+        if (characterController.isGrounded)
+        {
+            gravityForce = Vector3.zero; // Reset gravity if grounded
+        }
+        else
+        {
+            gravityForce += Vector3.down * 9.81f * Time.fixedDeltaTime; // Apply gravity
+        }
+
+        // Apply movement and gravity
+        characterController.Move(movement * speed * Time.fixedDeltaTime);
+        characterController.Move(gravityForce * Time.fixedDeltaTime);
+    }
+
 }

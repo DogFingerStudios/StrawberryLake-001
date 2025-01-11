@@ -25,7 +25,7 @@ public class CameraToggle : MonoBehaviour
         playerCamera.transform.rotation = firstPersonPosition.rotation;
     }
 
-    void Update()
+    void LateUpdate()
     {
         // Toggle the camera mode when the key is pressed
         if (Input.GetKeyDown(toggleKey))

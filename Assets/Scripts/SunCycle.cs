@@ -27,6 +27,9 @@ public class SunCycle : MonoBehaviour
             // Rotate the light around the X-axis
             directionalLight.transform.Rotate(Vector3.right * rotationSpeed * Time.deltaTime);
 
+            float intensity = Mathf.Clamp01(Vector3.Dot(directionalLight.transform.forward, Vector3.down));
+            directionalLight.intensity = intensity;
+
             // Optionally update the sun's color based on its rotation angle
             if (sunColor != null)
             {
